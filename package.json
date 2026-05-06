@@ -5,7 +5,7 @@
   "main": "index.ts",
   "type": "module",
   "scripts": {
-    "start": "tsx index.ts"
+    "dev": "tsx index.ts"
   },
   "author": "",
   "license": "MIT",
@@ -15,7 +15,7 @@
     "viem": "^2.20.0"
   },
   "devDependencies": {
-    "@types/node": "^20.11.10",
+    "@types/node": "^20.19.39",
     "tsx": "^3.13.0"
   }
 }

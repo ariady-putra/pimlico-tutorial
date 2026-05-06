@@ -75,7 +75,7 @@ const account = await toNexusSmartAccount({
   owners: [owner],
   version: "1.0.0",
 });
-console.log(`Smart account address: https://${process.env.NETWORK}.etherscan.io/address/${account.address}`);
+console.log(`Smart account address: https://${network}.etherscan.io/address/${account.address}`);
 
 const smartAccountClient = createSmartAccountClient({
   account,
@@ -113,7 +113,14 @@ const { transactionHash } = (
     params: [receipt.userOpHash],
   })
 )!;
-console.log(`Transaction hash: https://${process.env.NETWORK}.etherscan.io/tx/${transactionHash}`);
+console.log(`Transaction hash: https://${network}.etherscan.io/tx/${transactionHash}`);
 
 const { status } = await publicClient.waitForTransactionReceipt({ hash: transactionHash });
 console.log({ status });
+
+const isCounterExecutorModuleInstalled = await smartAccountClient.isModuleInstalled({
+  type: "executor",
+  address: counterExecutorModule,
+  context: installData,
+});
+console.log({ isCounterExecutorModuleInstalled });

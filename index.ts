@@ -19,9 +19,9 @@ import {
 
 import { encodeFunctionData, parseAbiItem } from "viem";
 import { erc7579Actions } from "permissionless/actions/erc7579";
-import { CALLTYPE, CallType } from "./types/calltype";
-import { EXECTYPE, ExecType } from "./types/exectype";
+import { Action, encodeExecuteBatch, encodeExecuteSingle } from "./utils";
 import CounterExecutorModule from "./ExecutorModule.json";
+import assert from "assert";
 
 const network = process.env.NETWORK;
 if (!network) throw new Error("Missing NETWORK");
@@ -139,34 +139,42 @@ console.log({ isCounterExecutorModuleInstalled });
 //                   //
 ///////////////////////
 
-const encodeMode = (callType: CallType, execType: ExecType) =>
-  encodePacked(["bytes1", "bytes1", "bytes30"], [callType, execType, "0x000000000000000000000000000000000000000000000000000000000000"]);
+const incrementCount: Action = {
+  module: counterExecutorModule,
+  value: 0n,
+  data: {
+    abi: CounterExecutorModule.abi,
+    functionName: "incrementCount",
+  },
+};
 
-const COUNT = 3;
-for (let c = 0; c < COUNT; c++) {
-  const incrementCountTxHash = await smartAccountClient.sendTransaction({
-    callData: encodeFunctionData({
-      abi: parseAbi([
-        "function execute(bytes32 mode, bytes calldata executionCalldata) external payable",
-      ]),
-      functionName: "execute",
-      args: [
-        encodeMode(CALLTYPE.SINGLE, EXECTYPE.DEFAULT),
-        encodePacked(
-          ["address", "uint256", "bytes"],
-          [counterExecutorModule, 0n, encodeFunctionData({
-            abi: CounterExecutorModule.abi,
-            functionName: "incrementCount",
-          })],
-        ),
-      ],
-    }),
-  });
-  console.log(`Increment count${c}: https://${network}.etherscan.io/tx/${incrementCountTxHash}`);
+/////////////////////
+//                 //
+//  EXECUTE BATCH  //
+//                 //
+/////////////////////
 
-  const { status: incrementCountStatus } = await publicClient.waitForTransactionReceipt({ hash: incrementCountTxHash });
-  console.log({ [`incrementCount${c}.status`]: incrementCountStatus });
-}
+const batchIncrementCountTxHash = await smartAccountClient.sendTransaction({
+  callData: encodeExecuteBatch([incrementCount, incrementCount]),
+});
+console.log(`Batch increment count: https://${network}.etherscan.io/tx/${batchIncrementCountTxHash}`);
+
+const { status: batchIncrementCountStatus } = await publicClient.waitForTransactionReceipt({ hash: batchIncrementCountTxHash });
+console.log({ batchIncrementCountStatus });
+
+//////////////////////
+//                  //
+//  EXECUTE SINGLE  //
+//                  //
+//////////////////////
+
+const incrementCountTxHash = await smartAccountClient.sendTransaction({
+  callData: encodeExecuteSingle(incrementCount),
+});
+console.log(`Increment count: https://${network}.etherscan.io/tx/${incrementCountTxHash}`);
+
+const { status: incrementCountStatus } = await publicClient.waitForTransactionReceipt({ hash: incrementCountTxHash });
+console.log({ incrementCountStatus });
 
 /////////////////
 //             //
@@ -174,6 +182,8 @@ for (let c = 0; c < COUNT; c++) {
 //             //
 /////////////////
 
+// setTimeout(
+//   async () => {
 const count = await publicClient.readContract({
   address: counterExecutorModule,
   abi: CounterExecutorModule.abi,
@@ -181,3 +191,10 @@ const count = await publicClient.readContract({
   account,
 });
 console.log({ account: account.address, count });
+assert(
+  count === 3n,
+  "Expected count to be 3",
+);
+//   },
+//   12_000,
+// );

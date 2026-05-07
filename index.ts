@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { appendFileSync } from "fs";
 import { toNexusSmartAccount, toSafeSmartAccount } from "permissionless/accounts";
-import { Address, Chain, Hex, SignableMessage, TypedData, TypedDataDefinition, UnionPartialBy, createPublicClient, encodePacked, getContract, http } from "viem";
+import { Address, Chain, Hex, SignableMessage, TypedData, TypedDataDefinition, UnionPartialBy, createPublicClient, encodeAbiParameters, encodePacked, getContract, http } from "viem";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { optimismSepolia, sepolia } from "viem/chains";
 import { createPimlicoClient } from "permissionless/clients/pimlico";
@@ -19,6 +19,9 @@ import {
 
 import { encodeFunctionData, parseAbiItem } from "viem";
 import { erc7579Actions } from "permissionless/actions/erc7579";
+import { CALLTYPE, CallType } from "./types/calltype";
+import { EXECTYPE, ExecType } from "./types/exectype";
+import CounterExecutorModule from "./ExecutorModule.json";
 
 const network = process.env.NETWORK;
 if (!network) throw new Error("Missing NETWORK");
@@ -57,7 +60,7 @@ const pimlicoClient = createPimlicoClient({
 });
 
 const owner = privateKeyToAccount(privateKey);
-console.log({ owner });
+console.log({ owner: owner.address });
 
 // const account = await toSafeSmartAccount({
 //   client: publicClient,
@@ -66,9 +69,8 @@ console.log({ owner });
 //   version: "1.4.1",
 //   safe4337ModuleAddress: "0x7579EE8307284F293B1927136486880611F20002",
 //   erc7579LaunchpadAddress: "0x7579011aB74c46090561ea277Ba79D510c6C00ff",
-
-//   attesters: ["0x000000333034E9f539ce08819E12c1b8Cb29084d"], // This address belongs to Rhinestone. By designating them as attesters, you authorize that only modules explicitly approved by Rhinestone can be installed on your safe.
-//   attestersThreshold: 1,
+//   // attesters: ["0x000000333034E9f539ce08819E12c1b8Cb29084d"], // This address belongs to Rhinestone. By designating them as attesters, you authorize that only modules explicitly approved by Rhinestone can be installed on your safe.
+//   // attestersThreshold: 1,
 // });
 const account = await toNexusSmartAccount({
   client: publicClient,
@@ -90,33 +92,39 @@ const smartAccountClient = createSmartAccountClient({
   erc7579Actions()
 );
 
+//////////////////////
+//                  //
+//  INSTALL MODULE  //
+//                  //
+//////////////////////
+
 // const ownableExecutorModule = "0x4Fd8d57b94966982B62e9588C27B4171B55E8354";
 // const moduleData = encodePacked(["address"], [owner.address]);
-// const userOpHash = await smartAccountClient.installModule({
+// const installModuleOpHash = await smartAccountClient.installModule({
 //   type: "executor",
 //   address: ownableExecutorModule,
 //   context: moduleData,
 // });
 const counterExecutorModule = "0xc8d3c0F8CF4a8B992bb4393729e89040bD17738a";
 const installData = "0x"; // encodePacked([], []);
-const userOpHash = await smartAccountClient.installModule({
+const installModuleOpHash = await smartAccountClient.installModule({
   type: "executor",
   address: counterExecutorModule,
   context: installData,
 });
 
-const receipt = await pimlicoClient.waitForUserOperationReceipt({ hash: userOpHash });
+const installModuleReceipt = await pimlicoClient.waitForUserOperationReceipt({ hash: installModuleOpHash });
 
-const { transactionHash } = (
+const { transactionHash: installModuleTxHash } = (
   await pimlicoClient.request({
     method: "eth_getUserOperationByHash",
-    params: [receipt.userOpHash],
+    params: [installModuleReceipt.userOpHash],
   })
 )!;
-console.log(`Transaction hash: https://${network}.etherscan.io/tx/${transactionHash}`);
+console.log(`Install module: https://${network}.etherscan.io/tx/${installModuleTxHash}`);
 
-const { status } = await publicClient.waitForTransactionReceipt({ hash: transactionHash });
-console.log({ status });
+const { status: installModuleStatus } = await publicClient.waitForTransactionReceipt({ hash: installModuleTxHash });
+console.log({ installModuleStatus });
 
 const isCounterExecutorModuleInstalled = await smartAccountClient.isModuleInstalled({
   type: "executor",
@@ -124,3 +132,52 @@ const isCounterExecutorModuleInstalled = await smartAccountClient.isModuleInstal
   context: installData,
 });
 console.log({ isCounterExecutorModuleInstalled });
+
+///////////////////////
+//                   //
+//  INCREMENT COUNT  //
+//                   //
+///////////////////////
+
+const encodeMode = (callType: CallType, execType: ExecType) =>
+  encodePacked(["bytes1", "bytes1", "bytes30"], [callType, execType, "0x000000000000000000000000000000000000000000000000000000000000"]);
+
+const COUNT = 3;
+for (let c = 0; c < COUNT; c++) {
+  const incrementCountTxHash = await smartAccountClient.sendTransaction({
+    callData: encodeFunctionData({
+      abi: parseAbi([
+        "function execute(bytes32 mode, bytes calldata executionCalldata) external payable",
+      ]),
+      functionName: "execute",
+      args: [
+        encodeMode(CALLTYPE.SINGLE, EXECTYPE.DEFAULT),
+        encodePacked(
+          ["address", "uint256", "bytes"],
+          [counterExecutorModule, 0n, encodeFunctionData({
+            abi: CounterExecutorModule.abi,
+            functionName: "incrementCount",
+          })],
+        ),
+      ],
+    }),
+  });
+  console.log(`Increment count${c}: https://${network}.etherscan.io/tx/${incrementCountTxHash}`);
+
+  const { status: incrementCountStatus } = await publicClient.waitForTransactionReceipt({ hash: incrementCountTxHash });
+  console.log({ [`incrementCount${c}.status`]: incrementCountStatus });
+}
+
+/////////////////
+//             //
+//  GET COUNT  //
+//             //
+/////////////////
+
+const count = await publicClient.readContract({
+  address: counterExecutorModule,
+  abi: CounterExecutorModule.abi,
+  functionName: "getCount",
+  account,
+});
+console.log({ account: account.address, count });

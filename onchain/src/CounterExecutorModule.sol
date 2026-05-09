@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.27;
 
-import {console} from "forge-std/console.sol";
 import {ERC7579Executor} from "@openzeppelin/community-contracts/account/modules/ERC7579Executor.sol";
 import {IERC7579Module} from "@openzeppelin/contracts/interfaces/draft-IERC7579.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
@@ -68,7 +67,6 @@ contract CounterExecutorModule is ERC7579Executor {
 
     function _updateSalt(address owner) private {
         bytes memory salt = abi.encodePacked(owner, block.timestamp);
-        console.log("_updateSalt", block.timestamp);
         _salts[owner] = keccak256(salt);
     }
 

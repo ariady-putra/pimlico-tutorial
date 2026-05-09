@@ -20,6 +20,6 @@ contract CounterExecutorModuleScript is Script {
 
         address counterAddress = address(counter);
         console.log("CounterExecutorModule deployed at", counterAddress);
-        // CounterExecutorModule deployed at 0x00c4ed7f0a672F54601903dBdff34f42A84001c8
+        // CounterExecutorModule deployed at 0x5ca58926833Cca3b1C7cB708E43570302A4a0dA2
     }
 }

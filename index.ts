@@ -105,7 +105,7 @@ const smartAccountClient = createSmartAccountClient({
 
 const counterExecutorModule: InstallModuleParameters<SmartAccount> = {
   type: "executor",
-  address: "0x00c4ed7f0a672F54601903dBdff34f42A84001c8",
+  address: "0x5ca58926833Cca3b1C7cB708E43570302A4a0dA2",
   context: owner.address,
 };
 

@@ -1,11 +1,11 @@
-import assert from "assert";
 import { Action, encodeBatch, encodeMode, encodeSingle } from "./utils";
-import CounterExecutorModule from "./ExecutorModule.json";
 import { CALLTYPE } from "./types/calltype";
 import { EXECTYPE } from "./types/exectype";
+import CounterExecutorModule from "./ExecutorModule.json";
+import assert from "assert";
 
 const incrementCount: Action = {
-  module: "0x5615dEB798BB3E4dFa0139dFa1b3D433Cc23b72f",
+  target: "0x5615dEB798BB3E4dFa0139dFa1b3D433Cc23b72f",
   value: 0n,
   data: {
     abi: CounterExecutorModule.abi,
@@ -29,11 +29,11 @@ assert(
   new Error("Wrong encodeSingle"),
 );
 
-/////////////////////
-//                 //
+////////////////////
+//                //
 //  ENCODE BATCH  //
-//                 //
-/////////////////////
+//                //
+////////////////////
 
 assert(
   encodeMode(CALLTYPE.BATCH, EXECTYPE.DEFAULT) === "0x0100000000000000000000000000000000000000000000000000000000000000",

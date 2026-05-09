@@ -3,7 +3,7 @@ import { CALLTYPE, CallType } from "./types/calltype";
 import { EXECTYPE, ExecType } from "./types/exectype";
 
 export type Action = {
-  module: Address,
+  target: Address,
   value: bigint,
   data: {
     abi: AbiParameter[],
@@ -12,12 +12,12 @@ export type Action = {
   },
 };
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-export const encodeSingle = ({ module, value, data }: Action) =>
+export const encodeSingle = ({ target, value, data }: Action) =>
   encodePacked(
     ["address", "uint256", "bytes"],
-    [module, value, encodeFunctionData(data)],
+    [target, value, encodeFunctionData(data)],
   );
 
 export const encodeBatch = (actions: Action[]) =>
@@ -26,21 +26,24 @@ export const encodeBatch = (actions: Action[]) =>
       name: "batch",
       type: "tuple[]",
       components: [
-        { name: "module", type: "address" },
+        { name: "target", type: "address" },
         { name: "value", type: "uint256" },
         { name: "callData", type: "bytes" },
       ],
     }],
     [actions.map(
-      ({ module, value, data }) =>
-        ({ module, value, callData: encodeFunctionData(data) })
+      ({ target, value, data }) =>
+        ({ target, value, callData: encodeFunctionData(data) })
     )],
   );
 
 export const encodeMode = (callType: CallType, execType: ExecType) =>
-  encodePacked(["bytes1", "bytes1", "bytes30"], [callType, execType, "0x000000000000000000000000000000000000000000000000000000000000"]);
+  encodePacked(
+    ["bytes1", "bytes1", "bytes30"],
+    [callType, execType, "0x000000000000000000000000000000000000000000000000000000000000"],
+  );
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 export const encodeExecuteSingle = (action: Action, execType: ExecType = EXECTYPE.DEFAULT) =>
   encodeFunctionData({

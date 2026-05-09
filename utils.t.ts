@@ -1,14 +1,14 @@
 import { Action, encodeBatch, encodeMode, encodeSingle } from "./utils";
 import { CALLTYPE } from "./types/calltype";
 import { EXECTYPE } from "./types/exectype";
-import CounterExecutorModule from "./ExecutorModule.json";
+import MockModule from "./MockModule.json";
 import assert from "assert";
 
 const incrementCount: Action = {
   target: "0x5615dEB798BB3E4dFa0139dFa1b3D433Cc23b72f",
   value: 0n,
   data: {
-    abi: CounterExecutorModule.abi,
+    abi: MockModule.abi,
     functionName: "incrementCount",
   },
 };

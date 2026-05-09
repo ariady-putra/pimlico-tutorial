@@ -198,8 +198,8 @@ console.log({ batchIncrementCountStatus });
 
 const admin = privateKeyToAccount(adminPK as Hex);
 
-const singleDefault = encodeMode(CALLTYPE.SINGLE, EXECTYPE.DEFAULT);
-const batchDefault = encodeMode(CALLTYPE.BATCH, EXECTYPE.DEFAULT);
+const defaultSingle = encodeMode(CALLTYPE.SINGLE, EXECTYPE.DEFAULT);
+const defaultBatch = encodeMode(CALLTYPE.BATCH, EXECTYPE.DEFAULT);
 
 console.log("Wait 15 seconds...");
 
@@ -219,7 +219,7 @@ setTimeout(
         functionName: "getSalt",
         args: [owner.address],
       }) as Hex,
-      mode: singleDefault,
+      mode: defaultSingle,
       module: CounterExecutor.module.address,
     };
 
@@ -286,7 +286,7 @@ setTimeout(
         functionName: "getSalt",
         args: [owner.address],
       }) as Hex,
-      mode: batchDefault,
+      mode: defaultBatch,
       module: CounterExecutor.module.address,
     };
 

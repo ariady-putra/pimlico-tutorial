@@ -31,12 +31,9 @@ Increment count: https://sepolia-optimism.etherscan.io/tx/0xIncrementCountTxHash
 { incrementCountStatus: 'success' }
 Batch increment count: https://sepolia-optimism.etherscan.io/tx/0xBatchIncrementCountTxHash
 { batchIncrementCountStatus: 'success' }
-Wait 15 seconds...
 Execute increment count from executor: https://sepolia-optimism.etherscan.io/tx/0xExecuteIncrementCountFromExecutorTxHash
 { executeIncrementCountFromExecutorStatus: 'success' }
-Wait 15 seconds...
 Batch execute increment count from executor: https://sepolia-optimism.etherscan.io/tx/0xBatchExecuteIncrementCountFromExecutorTxHash
 { batchExecuteIncrementCountFromExecutorStatus: 'success' }
-Wait 15 seconds...
 { account: '0xSmartAccountAddress', count: 8n }
 ```

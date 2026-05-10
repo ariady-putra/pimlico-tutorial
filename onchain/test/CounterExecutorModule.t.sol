@@ -103,7 +103,7 @@ contract CounterExecutorModuleTest is Test {
         bytes memory decrementCount =
             abi.encodePacked(module, value, abi.encodeWithSelector(CounterExecutorModule.decrementCount.selector));
         bytes32 salt = counter.getSalt(owner.addr);
-        bytes memory signature = _sign(owner, address(account), salt, mode, module);
+        bytes memory signature = _sign(owner, address(account), salt, mode, module, decrementCount);
         // vm.prank(owner.addr); // anyone with owner signature can execute
         counter.execute(address(account), salt, mode, abi.encodePacked(signature, decrementCount));
 
@@ -161,7 +161,7 @@ contract CounterExecutorModuleTest is Test {
         }
         bytes memory batchDecrementCounts = ERC7579Utils.encodeBatch(decrementCounts);
         bytes32 salt = counter.getSalt(owner.addr);
-        bytes memory signature = _sign(owner, address(account), salt, mode, module);
+        bytes memory signature = _sign(owner, address(account), salt, mode, module, batchDecrementCounts);
         // vm.prank(owner.addr); // anyone with owner signature can execute
         counter.execute(address(account), salt, mode, abi.encodePacked(signature, batchDecrementCounts));
 
@@ -169,12 +169,15 @@ contract CounterExecutorModuleTest is Test {
         assertEq(counter.getCount(), 0);
     }
 
-    function _sign(VmSafe.Wallet memory signer, address account, bytes32 salt, bytes32 mode, address module)
-        private
-        pure
-        returns (bytes memory)
-    {
-        bytes memory message = abi.encodePacked(account, salt, mode, module);
+    function _sign(
+        VmSafe.Wallet memory signer,
+        address account,
+        bytes32 salt,
+        bytes32 mode,
+        address module,
+        bytes memory action
+    ) private pure returns (bytes memory) {
+        bytes memory message = abi.encodePacked(account, salt, mode, module, action);
         bytes32 digest = keccak256(message).toEthSignedMessageHash();
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(signer, digest);
         return abi.encodePacked(r, s, v); // NOTE: The order here is different

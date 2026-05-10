@@ -61,13 +61,18 @@ contract CounterExecutorModule is ERC7579Executor {
         return _counts[msg.sender]--;
     }
 
-    function getSalt(address owner) public view returns (bytes32) {
-        return _salts[owner];
-    }
-
-    function _updateSalt(address owner) private {
+    function _initSalt(address owner) private {
         bytes memory salt = abi.encodePacked(owner, block.timestamp);
         _salts[owner] = keccak256(salt);
+    }
+
+    function _nextSalt(address owner) private {
+        bytes memory salt = abi.encodePacked(owner, _salts[owner]);
+        _salts[owner] = keccak256(salt);
+    }
+
+    function getSalt(address owner) public view returns (bytes32) {
+        return _salts[owner];
     }
 
     /// @inheritdoc ERC7579Executor
@@ -78,11 +83,11 @@ contract CounterExecutorModule is ERC7579Executor {
         // onlyAccountOwner(account)
         returns (bytes calldata)
     {
-        bytes memory message = abi.encodePacked(account, salt, mode, _SELF);
-        bytes32 digest = keccak256(message).toEthSignedMessageHash();
-
         bytes calldata signature = data[:65];
         bytes calldata callData = data[65:];
+
+        bytes memory message = abi.encodePacked(account, salt, mode, _SELF, callData);
+        bytes32 digest = keccak256(message).toEthSignedMessageHash();
 
         (address owner, ECDSA.RecoverError err,) = digest.tryRecoverCalldata(signature);
         if (err != ECDSA.RecoverError.NoError) revert InvalidSignature();
@@ -90,7 +95,7 @@ contract CounterExecutorModule is ERC7579Executor {
         if (!_accounts[owner][account]) revert InvalidSigner();
         if (getSalt(owner) != salt) revert InvalidSalt();
 
-        _updateSalt(owner);
+        _nextSalt(owner);
 
         return callData;
     }
@@ -103,7 +108,7 @@ contract CounterExecutorModule is ERC7579Executor {
         address account = msg.sender;
 
         _accounts[owner][account] = true;
-        _updateSalt(owner);
+        _initSalt(owner);
 
         emit ModuleInstalled(_SELF, msg.sender);
     }

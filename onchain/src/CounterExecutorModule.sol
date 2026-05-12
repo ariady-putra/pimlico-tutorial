@@ -21,8 +21,8 @@ contract CounterExecutorModule is ERC7579Executor {
     //      Account    Count
     mapping(address => uint256) private _counts;
 
-    event ModuleInstalled(address indexed module, address account);
-    event ModuleUninstalled(address indexed module, address account);
+    event ERC7579ExecutorModuleInstalled(address indexed module, address account);
+    event ERC7579ExecutorModuleUninstalled(address indexed module, address account);
 
     error InvalidInstallData();
     error InvalidUninstallData();
@@ -110,7 +110,7 @@ contract CounterExecutorModule is ERC7579Executor {
         _accounts[owner][account] = true;
         _initSalt(owner);
 
-        emit ModuleInstalled(_SELF, msg.sender);
+        emit ERC7579ExecutorModuleInstalled(_SELF, msg.sender);
     }
 
     /// @inheritdoc IERC7579Module
@@ -124,6 +124,6 @@ contract CounterExecutorModule is ERC7579Executor {
 
         delete _accounts[owner][account];
 
-        emit ModuleUninstalled(_SELF, msg.sender);
+        emit ERC7579ExecutorModuleUninstalled(_SELF, msg.sender);
     }
 }

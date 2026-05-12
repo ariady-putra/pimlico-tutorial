@@ -45,7 +45,7 @@ contract CounterExecutorModuleTest is Test {
         vm.prank(entryPoint);
 
         vm.expectEmit(true, false, false, true);
-        emit CounterExecutorModule.ModuleInstalled(module, address(account));
+        emit CounterExecutorModule.ERC7579ExecutorModuleInstalled(module, address(account));
 
         account.installModule(MODULE_TYPE_EXECUTOR, module, installData);
     }
@@ -63,7 +63,7 @@ contract CounterExecutorModuleTest is Test {
         account.installModule(MODULE_TYPE_EXECUTOR, module, installData);
 
         vm.expectEmit(false, false, false, true);
-        emit CounterExecutorModule.ModuleUninstalled(module, address(account));
+        emit CounterExecutorModule.ERC7579ExecutorModuleUninstalled(module, address(account));
 
         vm.prank(entryPoint);
         account.uninstallModule(MODULE_TYPE_EXECUTOR, module, installData);

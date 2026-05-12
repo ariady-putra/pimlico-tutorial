@@ -49,7 +49,7 @@ const chainOf: Record<string, Chain> = {
 };
 const chain = chainOf[network];
 
-export const publicClient = createPublicClient({
+const publicClient = createPublicClient({
   chain,
   transport: http(process.env.ALCHEMY_RPC_URL),
 }).extend(walletActions);
@@ -105,7 +105,7 @@ const smartAccountClient = createSmartAccountClient({
 
 const counterExecutorModule: InstallModuleParameters<SmartAccount> = {
   type: "executor",
-  address: "0x7A430Dd4b082365FDd106D674a5487dD0dE25441",
+  address: "0x402A5947e74A234728fce825740D375Da4C80064",
   context: owner.address,
 };
 

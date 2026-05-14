@@ -107,14 +107,14 @@ const smartAccountClient = createSmartAccountClient({
 );
 
 const waitForNextBlock = (currentBlock: BlockNumber) =>
-  new Promise(
+  new Promise<BlockNumber>(
     (resolve) => {
       console.log("Waiting for next block...");
       const unwatch = publicClient.watchBlockNumber({
         onBlockNumber(blockNumber) {
           if (blockNumber > currentBlock) {
             unwatch();
-            resolve(0);
+            resolve(blockNumber);
           }
         },
       });

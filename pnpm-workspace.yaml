@@ -1,0 +1,6 @@
+blockExoticSubdeps: true
+trustPolicy: no-downgrade
+trustPolicyIgnoreAfter: 1440
+minimumReleaseAge: 1440
+allowBuilds:
+  esbuild: true

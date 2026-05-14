@@ -1,7 +1,8 @@
 import "dotenv/config";
 import { appendFileSync } from "fs";
+import { getMEEVersion, MEEVersion, toNexusAccount } from "@biconomy/abstractjs";
 import { toNexusSmartAccount, toSafeSmartAccount } from "permissionless/accounts";
-import { Address, Chain, Hex, SignableMessage, TypedData, TypedDataDefinition, UnionPartialBy, createPublicClient, encodeAbiParameters, encodePacked, getContract, http, keccak256, toHex, walletActions } from "viem";
+import { Address, BlockNumber, Chain, Hex, SignableMessage, TypedData, TypedDataDefinition, UnionPartialBy, createPublicClient, encodeAbiParameters, encodePacked, getContract, http, keccak256, toHex, walletActions } from "viem";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
 import { optimismSepolia, sepolia } from "viem/chains";
 import { createPimlicoClient } from "permissionless/clients/pimlico";
@@ -67,20 +68,28 @@ const pimlicoClient = createPimlicoClient({
 const owner = privateKeyToAccount(privateKey);
 console.log({ owner: owner.address });
 
-// const account = await toSafeSmartAccount({
+const counterExecutorModule: InstallModuleParameters<SmartAccount> = {
+  type: "executor",
+  address: "0x402A5947e74A234728fce825740D375Da4C80064",
+  context: owner.address as Hex,
+};
+
+// const account = await toNexusSmartAccount({
 //   client: publicClient,
 //   owners: [owner],
-//   entryPoint,
-//   version: "1.4.1",
-//   safe4337ModuleAddress: "0x7579EE8307284F293B1927136486880611F20002",
-//   erc7579LaunchpadAddress: "0x7579011aB74c46090561ea277Ba79D510c6C00ff",
-//   // attesters: ["0x000000333034E9f539ce08819E12c1b8Cb29084d"], // This address belongs to Rhinestone. By designating them as attesters, you authorize that only modules explicitly approved by Rhinestone can be installed on your safe.
-//   // attestersThreshold: 1,
+//   version: "1.0.0",
 // });
-const account = await toNexusSmartAccount({
-  client: publicClient,
-  owners: [owner],
-  version: "1.0.0",
+const account = await toNexusAccount({
+  signer: owner,
+  chainConfiguration: {
+    chain,
+    transport: http(process.env.ALCHEMY_RPC_URL),
+    version: getMEEVersion(MEEVersion.V3_0_0),
+  },
+  executors: [{
+    module: counterExecutorModule.address,
+    data: counterExecutorModule.context,
+  }],
 });
 console.log(`Smart account address: https://${network}.etherscan.io/address/${account.address}`);
 
@@ -97,51 +106,71 @@ const smartAccountClient = createSmartAccountClient({
   erc7579Actions()
 );
 
+const waitForNextBlock = (currentBlock: BlockNumber) =>
+  new Promise(
+    (resolve) => {
+      console.log("Waiting for next block...");
+      const unwatch = publicClient.watchBlockNumber({
+        onBlockNumber(blockNumber) {
+          if (blockNumber > currentBlock) {
+            unwatch();
+            resolve(0);
+          }
+        },
+      });
+    }
+  );
+
 //////////////////////
 //                  //
 //  INSTALL MODULE  //
 //                  //
 //////////////////////
 
-const counterExecutorModule: InstallModuleParameters<SmartAccount> = {
-  type: "executor",
-  address: "0x402A5947e74A234728fce825740D375Da4C80064",
-  context: owner.address,
-};
-
 const CounterExecutor = {
   ...CounterExecutorModuleJSON,
   module: counterExecutorModule,
 };
 
-// const ownableExecutorModule = "0x4Fd8d57b94966982B62e9588C27B4171B55E8354";
-// const moduleData = encodePacked(["address"], [owner.address]);
-// const installModuleOpHash = await smartAccountClient.installModule({
-//   type: "executor",
-//   address: ownableExecutorModule,
-//   context: moduleData,
+// // const ownableExecutorModule = "0x4Fd8d57b94966982B62e9588C27B4171B55E8354";
+// // const moduleData = encodePacked(["address"], [owner.address]);
+// // const installModuleOpHash = await smartAccountClient.installModule({
+// //   type: "executor",
+// //   address: ownableExecutorModule,
+// //   context: moduleData,
+// // });
+
+// const installModuleOpHash = await smartAccountClient.installModule(CounterExecutor.module);
+// const installModuleReceipt = await pimlicoClient.waitForUserOperationReceipt({
+//   hash: installModuleOpHash,
 // });
 
-const installModuleOpHash = await smartAccountClient.installModule(CounterExecutor.module);
-const installModuleReceipt = await pimlicoClient.waitForUserOperationReceipt({
-  hash: installModuleOpHash,
-});
+// const { transactionHash: installModuleTxHash } = (
+//   await pimlicoClient.request({
+//     method: "eth_getUserOperationByHash",
+//     params: [installModuleReceipt.userOpHash],
+//   })
+// )!;
+// console.log(`Install module: https://${network}.etherscan.io/tx/${installModuleTxHash}`);
 
-const { transactionHash: installModuleTxHash } = (
-  await pimlicoClient.request({
-    method: "eth_getUserOperationByHash",
-    params: [installModuleReceipt.userOpHash],
-  })
-)!;
-console.log(`Install module: https://${network}.etherscan.io/tx/${installModuleTxHash}`);
+// const { status: installModuleStatus } = await publicClient.waitForTransactionReceipt({
+//   hash: installModuleTxHash,
+// });
+// console.log({ installModuleStatus });
 
-const { status: installModuleStatus } = await publicClient.waitForTransactionReceipt({
-  hash: installModuleTxHash,
-});
-console.log({ installModuleStatus });
+// const isCounterExecutorModuleInstalled = await smartAccountClient.isModuleInstalled(CounterExecutor.module);
+// console.log({ isCounterExecutorModuleInstalled });
 
-const isCounterExecutorModuleInstalled = await smartAccountClient.isModuleInstalled(CounterExecutor.module);
-console.log({ isCounterExecutorModuleInstalled });
+async function assertAccountModuleState() {
+  assert(
+    await account.isDeployed(),
+    "Expected account to be deployed",
+  );
+  assert(
+    await smartAccountClient.isModuleInstalled(CounterExecutor.module),
+    "Expected module to be installed",
+  );
+}
 
 ///////////////////////
 //                   //
@@ -157,6 +186,7 @@ const incrementCount: Action = {
     functionName: "incrementCount",
   },
 };
+console.log("Incrementing count...");
 
 //////////////////////
 //                  //
@@ -169,10 +199,13 @@ const incrementCountTxHash = await smartAccountClient.sendTransaction({
 });
 console.log(`Increment count: https://${network}.etherscan.io/tx/${incrementCountTxHash}`);
 
-const { status: incrementCountStatus } = await publicClient.waitForTransactionReceipt({
+const incrementCountReceipt = await publicClient.waitForTransactionReceipt({
   hash: incrementCountTxHash,
 });
-console.log({ incrementCountStatus });
+console.log({ incrementCountStatus: incrementCountReceipt.status });
+
+await waitForNextBlock(incrementCountReceipt.blockNumber);
+await assertAccountModuleState();
 
 /////////////////////
 //                 //
@@ -185,10 +218,13 @@ const batchIncrementCountTxHash = await smartAccountClient.sendTransaction({
 });
 console.log(`Batch increment count: https://${network}.etherscan.io/tx/${batchIncrementCountTxHash}`);
 
-const { status: batchIncrementCountStatus } = await publicClient.waitForTransactionReceipt({
+const batchIncrementCountReceipt = await publicClient.waitForTransactionReceipt({
   hash: batchIncrementCountTxHash,
 });
-console.log({ batchIncrementCountStatus });
+console.log({ batchIncrementCountStatus: batchIncrementCountReceipt.status });
+
+await waitForNextBlock(batchIncrementCountReceipt.blockNumber);
+await assertAccountModuleState();
 
 /////////////////////////////
 //                         //
@@ -200,6 +236,8 @@ const admin = privateKeyToAccount(adminPK as Hex);
 
 const defaultSingle = encodeMode(CALLTYPE.SINGLE, EXECTYPE.DEFAULT);
 const defaultBatch = encodeMode(CALLTYPE.BATCH, EXECTYPE.DEFAULT);
+
+console.log("Executing from executor...");
 
 ////////////////////////////////////
 //                                //
@@ -255,14 +293,20 @@ const { request: executeIncrementCountFromExecutor } = await publicClient.simula
     ),
   ],
   account: admin,
+  nonce: await publicClient.getTransactionCount({
+    address: admin.address,
+    blockTag: "pending",
+  }),
 });
 const executeIncrementCountFromExecutorTxHash = await publicClient.writeContract(executeIncrementCountFromExecutor);
 console.log(`Execute increment count from executor: https://${network}.etherscan.io/tx/${executeIncrementCountFromExecutorTxHash}`);
 
-const { status: executeIncrementCountFromExecutorStatus } = await publicClient.waitForTransactionReceipt({
+const executeIncrementCountFromExecutorReceipt = await publicClient.waitForTransactionReceipt({
   hash: executeIncrementCountFromExecutorTxHash,
 });
-console.log({ executeIncrementCountFromExecutorStatus });
+console.log({ executeIncrementCountFromExecutorStatus: executeIncrementCountFromExecutorReceipt.status });
+
+await waitForNextBlock(executeIncrementCountFromExecutorReceipt.blockNumber);
 
 ///////////////////////////////////
 //                               //
@@ -318,14 +362,20 @@ const { request: batchExecuteIncrementCountFromExecutor } = await publicClient.s
     ),
   ],
   account: admin,
+  nonce: await publicClient.getTransactionCount({
+    address: admin.address,
+    blockTag: "pending",
+  }),
 });
 const batchExecuteIncrementCountFromExecutorTxHash = await publicClient.writeContract(batchExecuteIncrementCountFromExecutor);
 console.log(`Batch execute increment count from executor: https://${network}.etherscan.io/tx/${batchExecuteIncrementCountFromExecutorTxHash}`);
 
-const { status: batchExecuteIncrementCountFromExecutorStatus } = await publicClient.waitForTransactionReceipt({
+const batchExecuteIncrementCountFromExecutorReceipt = await publicClient.waitForTransactionReceipt({
   hash: batchExecuteIncrementCountFromExecutorTxHash,
 });
-console.log({ batchExecuteIncrementCountFromExecutorStatus });
+console.log({ batchExecuteIncrementCountFromExecutorStatus: batchExecuteIncrementCountFromExecutorReceipt.status });
+
+await waitForNextBlock(batchExecuteIncrementCountFromExecutorReceipt.blockNumber);
 
 /////////////////
 //             //
@@ -333,23 +383,18 @@ console.log({ batchExecuteIncrementCountFromExecutorStatus });
 //             //
 /////////////////
 
-setTimeout(
-  async () => {
-    const count = await publicClient.readContract({
-      address: CounterExecutor.module.address,
-      abi: CounterExecutor.abi,
-      functionName: "getCount",
-      account,
-    });
-    console.log({ account: account.address, count });
+const count = await publicClient.readContract({
+  address: CounterExecutor.module.address,
+  abi: CounterExecutor.abi,
+  functionName: "getCount",
+  account,
+});
+console.log({ account: account.address, count });
 
-    const expectedCount = 8n;
-    assert(
-      count === expectedCount,
-      `Expected count to be ${expectedCount}`,
-    );
-  },
-  12_000,
+const expectedCount = 8n;
+assert(
+  count === expectedCount,
+  `Expected count to be ${expectedCount}`,
 );
 
 // ////////////////////////

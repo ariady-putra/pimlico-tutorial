@@ -24,16 +24,19 @@ If everything works correctly, you should see something like the following print
 { network: 'sepolia-optimism' }
 { owner: '0xOwnerAddress' }
 Smart account address: https://sepolia-optimism.etherscan.io/address/0xSmartAccountAddress
-Install module: https://sepolia-optimism.etherscan.io/tx/0xInstallModuleTxHash
-{ installModuleStatus: 'success' }
-{ isCounterExecutorModuleInstalled: true }
+Incrementing count...
 Increment count: https://sepolia-optimism.etherscan.io/tx/0xIncrementCountTxHash
 { incrementCountStatus: 'success' }
+Waiting for next block...
 Batch increment count: https://sepolia-optimism.etherscan.io/tx/0xBatchIncrementCountTxHash
 { batchIncrementCountStatus: 'success' }
+Waiting for next block...
+Executing from executor...
 Execute increment count from executor: https://sepolia-optimism.etherscan.io/tx/0xExecuteIncrementCountFromExecutorTxHash
 { executeIncrementCountFromExecutorStatus: 'success' }
+Waiting for next block...
 Batch execute increment count from executor: https://sepolia-optimism.etherscan.io/tx/0xBatchExecuteIncrementCountFromExecutorTxHash
 { batchExecuteIncrementCountFromExecutorStatus: 'success' }
+Waiting for next block...
 { account: '0xSmartAccountAddress', count: 8n }
 ```

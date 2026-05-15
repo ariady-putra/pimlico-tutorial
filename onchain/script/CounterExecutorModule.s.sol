@@ -13,13 +13,13 @@ contract CounterExecutorModuleScript is Script {
     function run() public {
         vm.startBroadcast();
 
-        // counter = new CounterExecutorModule{salt: keccak256("ptDummyExecutorModule")}();
-        counter = new CounterExecutorModule();
+        counter = new CounterExecutorModule{salt: keccak256("ptDummyExecutorModuleBaseOP")}();
+        // counter = new CounterExecutorModule();
 
         vm.stopBroadcast();
 
         address counterAddress = address(counter);
         console.log("CounterExecutorModule deployed at", counterAddress);
-        // CounterExecutorModule deployed at 0x402A5947e74A234728fce825740D375Da4C80064
+        // CounterExecutorModule deployed at 0x6f77567101a95077E14e5E6eAB27214B6a9B556F
     }
 }

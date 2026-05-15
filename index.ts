@@ -4,7 +4,7 @@ import { getMEEVersion, MEEVersion, toNexusAccount } from "@biconomy/abstractjs"
 import { toNexusSmartAccount, toSafeSmartAccount } from "permissionless/accounts";
 import { Address, BlockNumber, Chain, Hex, SignableMessage, TypedData, TypedDataDefinition, UnionPartialBy, createPublicClient, encodeAbiParameters, encodePacked, getContract, http, keccak256, toHex, walletActions } from "viem";
 import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
-import { optimismSepolia, sepolia } from "viem/chains";
+import { baseSepolia, optimismSepolia, sepolia } from "viem/chains";
 import { createPimlicoClient } from "permissionless/clients/pimlico";
 import { createBundlerClient, entryPoint07Abi, entryPoint07Address, SmartAccount, toSmartAccount, UserOperation } from "viem/account-abstraction";
 import { createSmartAccountClient } from "permissionless";
@@ -33,6 +33,9 @@ const network = process.env.NETWORK;
 if (!network) throw new Error("Missing NETWORK");
 console.log({ network });
 
+const explorer = process.env.EXPLORER;
+if (!explorer) throw new Error("Missing EXPLORER");
+
 const pimlicoUrl = process.env.PIMLICO_RPC_URL;
 if (!pimlicoUrl) throw new Error("Missing PIMLICO_RPC_URL");
 
@@ -46,6 +49,7 @@ const privateKey =
 
 const chainOf: Record<string, Chain> = {
   "sepolia": sepolia,
+  "sepolia-base": baseSepolia,
   "sepolia-optimism": optimismSepolia,
 };
 const chain = chainOf[network];
@@ -70,7 +74,7 @@ console.log({ owner: owner.address });
 
 const counterExecutorModule: InstallModuleParameters<SmartAccount> = {
   type: "executor",
-  address: "0x402A5947e74A234728fce825740D375Da4C80064",
+  address: "0x6f77567101a95077E14e5E6eAB27214B6a9B556F",
   context: owner.address as Hex,
 };
 
@@ -91,7 +95,7 @@ const account = await toNexusAccount({
     data: counterExecutorModule.context,
   }],
 });
-console.log(`Smart account address: https://${network}.etherscan.io/address/${account.address}`);
+console.log(`Smart account address: ${explorer}/address/${account.address}`);
 
 const smartAccountClient = createSmartAccountClient({
   account,
@@ -151,7 +155,7 @@ const CounterExecutor = {
 //     params: [installModuleReceipt.userOpHash],
 //   })
 // )!;
-// console.log(`Install module: https://${network}.etherscan.io/tx/${installModuleTxHash}`);
+// console.log(`Install module: ${explorer}/${installModuleTxHash}`);
 
 // const { status: installModuleStatus } = await publicClient.waitForTransactionReceipt({
 //   hash: installModuleTxHash,
@@ -197,7 +201,7 @@ console.log("Incrementing count...");
 const incrementCountTxHash = await smartAccountClient.sendTransaction({
   callData: encodeExecuteSingle(incrementCount),
 });
-console.log(`Increment count: https://${network}.etherscan.io/tx/${incrementCountTxHash}`);
+console.log(`Increment count: ${explorer}/tx/${incrementCountTxHash}`);
 
 const incrementCountReceipt = await publicClient.waitForTransactionReceipt({
   hash: incrementCountTxHash,
@@ -216,7 +220,7 @@ await assertAccountModuleState();
 const batchIncrementCountTxHash = await smartAccountClient.sendTransaction({
   callData: encodeExecuteBatch([incrementCount, incrementCount, incrementCount]),
 });
-console.log(`Batch increment count: https://${network}.etherscan.io/tx/${batchIncrementCountTxHash}`);
+console.log(`Batch increment count: ${explorer}/tx/${batchIncrementCountTxHash}`);
 
 const batchIncrementCountReceipt = await publicClient.waitForTransactionReceipt({
   hash: batchIncrementCountTxHash,
@@ -299,7 +303,7 @@ const { request: executeIncrementCountFromExecutor } = await publicClient.simula
   }),
 });
 const executeIncrementCountFromExecutorTxHash = await publicClient.writeContract(executeIncrementCountFromExecutor);
-console.log(`Execute increment count from executor: https://${network}.etherscan.io/tx/${executeIncrementCountFromExecutorTxHash}`);
+console.log(`Execute increment count from executor: ${explorer}/tx/${executeIncrementCountFromExecutorTxHash}`);
 
 const executeIncrementCountFromExecutorReceipt = await publicClient.waitForTransactionReceipt({
   hash: executeIncrementCountFromExecutorTxHash,
@@ -368,7 +372,7 @@ const { request: batchExecuteIncrementCountFromExecutor } = await publicClient.s
   }),
 });
 const batchExecuteIncrementCountFromExecutorTxHash = await publicClient.writeContract(batchExecuteIncrementCountFromExecutor);
-console.log(`Batch execute increment count from executor: https://${network}.etherscan.io/tx/${batchExecuteIncrementCountFromExecutorTxHash}`);
+console.log(`Batch execute increment count from executor: ${explorer}/tx/${batchExecuteIncrementCountFromExecutorTxHash}`);
 
 const batchExecuteIncrementCountFromExecutorReceipt = await publicClient.waitForTransactionReceipt({
   hash: batchExecuteIncrementCountFromExecutorTxHash,
@@ -414,7 +418,7 @@ assert(
 //     params: [uninstallModuleReceipt.userOpHash],
 //   })
 // )!;
-// console.log(`Uninstall module: https://${network}.etherscan.io/tx/${uninstallModuleTxHash}`);
+// console.log(`Uninstall module: ${explorer}/tx/${uninstallModuleTxHash}`);
 
 // const { status: uninstallModuleStatus } = await publicClient.waitForTransactionReceipt({
 //   hash: uninstallModuleTxHash,

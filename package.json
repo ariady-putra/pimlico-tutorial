@@ -11,12 +11,12 @@
   "license": "MIT",
   "dependencies": {
     "@biconomy/abstractjs": "^1.2.3",
-    "dotenv": "^16.3.1",
-    "permissionless": "^0.2.0",
-    "viem": "^2.20.0"
+    "dotenv": "^16.6.1",
+    "permissionless": "^0.2.57",
+    "viem": "^2.49.2"
   },
   "devDependencies": {
-    "@types/node": "^20.19.39",
-    "tsx": "^3.13.0"
+    "@types/node": "^20.19.41",
+    "tsx": "^3.14.0"
   }
 }

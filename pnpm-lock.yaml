@@ -10,22 +10,22 @@ importers:
     dependencies:
       '@biconomy/abstractjs':
         specifier: ^1.2.3
-        version: 1.2.3(@metamask/delegation-toolkit@0.11.0(viem@2.48.8(typescript@5.9.3)))(@noble/curves@2.0.1)(@openzeppelin/merkle-tree@1.0.8)(@rhinestone/module-sdk@0.4.0(viem@2.48.8(typescript@5.9.3)))(@safe-global/types-kit@3.0.0(typescript@5.9.3))(typescript@5.9.3)(viem@2.48.8(typescript@5.9.3))
+        version: 1.2.3(@metamask/delegation-toolkit@0.11.0(viem@2.49.2(typescript@5.9.3)))(@noble/curves@2.0.1)(@openzeppelin/merkle-tree@1.0.8)(@rhinestone/module-sdk@0.4.0(viem@2.49.2(typescript@5.9.3)))(@safe-global/types-kit@3.0.0(typescript@5.9.3))(typescript@5.9.3)(viem@2.49.2(typescript@5.9.3))
       dotenv:
-        specifier: ^16.3.1
+        specifier: ^16.6.1
         version: 16.6.1
       permissionless:
-        specifier: ^0.2.0
-        version: 0.2.57(viem@2.48.8(typescript@5.9.3))
+        specifier: ^0.2.57
+        version: 0.2.57(viem@2.49.2(typescript@5.9.3))
       viem:
-        specifier: ^2.20.0
-        version: 2.48.8(typescript@5.9.3)
+        specifier: ^2.49.2
+        version: 2.49.2(typescript@5.9.3)
     devDependencies:
       '@types/node':
-        specifier: ^20.19.39
-        version: 20.19.39
+        specifier: ^20.19.41
+        version: 20.19.41
       tsx:
-        specifier: ^3.13.0
+        specifier: ^3.14.0
         version: 3.14.0
 
 packages:
@@ -240,6 +240,10 @@ packages:
     resolution: {integrity: sha512-k11yZxZg+t+gWvBbIswW0yoJlu8cHOC7dhunwOzoWH/mXGBiYyR4YY6hAEK/3EUs4UpB8la1RfdRpeGsFHkWsA==}
     engines: {node: ^14.21.3 || >=16}
 
+  '@noble/curves@1.9.7':
+    resolution: {integrity: sha512-gbKGcRUYIjA3/zCCNaWDciTMFI0dCkvou3TL8Zmy5Nc7sJ47a0jtOeZoTaMxkuqRo9cRhjOdZJXegxYE5FN/xw==}
+    engines: {node: ^14.21.3 || >=16}
+
   '@noble/curves@2.0.1':
     resolution: {integrity: sha512-vs1Az2OOTBiP4q0pwjW5aF0xp9n4MxVrmkFBxc6EKZc6ddYx5gaZiAsZoq0uRRXWbi3AT/sBqn05eRPtn1JCPw==}
     engines: {node: '>= 20.19.0'}
@@ -292,11 +296,22 @@ packages:
   '@types/ms@2.1.0':
     resolution: {integrity: sha512-GsCCIZDE/p3i96vtEqx+7dBUGXrc7zeSK3wwPHIaRThS+9OhWIXRqzs4d6k1SVU8g91DrNRWxWUGhp5KXQb2VA==}
 
-  '@types/node@20.19.39':
-    resolution: {integrity: sha512-orrrD74MBUyK8jOAD/r0+lfa1I2MO6I+vAkmAWzMYbCcgrN4lCrmK52gRFQq/JRxfYPfonkr4b0jcY7Olqdqbw==}
+  '@types/node@20.19.41':
+    resolution: {integrity: sha512-ECymXOukMnOoVkC2bb1Vc/w/836DXncOg5m8Xj1RH7xSHZJWNYY6Zh7EH477vcnD5egKNNfy2RpNOmuChhFPgQ==}
 
   abitype@1.2.3:
     resolution: {integrity: sha512-Ofer5QUnuUdTFsBRwARMoWKOH1ND5ehwYhJ3OJ/BQO+StkwQjHw0XyVh4vDttzHB7QOFhPHa/o413PJ82gU/Tg==}
+    peerDependencies:
+      typescript: '>=5.0.4'
+      zod: ^3.22.0 || ^4.0.0
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+      zod:
+        optional: true
+
+  abitype@1.2.4:
+    resolution: {integrity: sha512-dpKH+N27vRjarMVTFFkeY445VTKftzGWpL0FiT7xmVmzQRKazZexzC5uHG0f6XKsVLAuUlndnbGau6lRejClxg==}
     peerDependencies:
       typescript: '>=5.0.4'
       zod: ^3.22.0 || ^4.0.0
@@ -429,8 +444,8 @@ packages:
     deprecated: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
     hasBin: true
 
-  viem@2.48.8:
-    resolution: {integrity: sha512-Xj3Nrt66SKtn06kczU91ELn9Difr84ZM5A62BTlaisT5lpgt058i2mBkfMZCXHGb1ocOLjzC2ztPhD0Lvky7uQ==}
+  viem@2.49.2:
+    resolution: {integrity: sha512-nZQTExZDZfxdz2NZnl70t41Mb4/jENt3AkVsVcHO18Jkgcg1VytEpWxLkqp7OC1vW8a4h3CYZPfwnAq/E+gf4A==}
     peerDependencies:
       typescript: '>=5.0.4'
     peerDependenciesMeta:
@@ -456,15 +471,15 @@ snapshots:
 
   '@adraffy/ens-normalize@1.11.1': {}
 
-  '@biconomy/abstractjs@1.2.3(@metamask/delegation-toolkit@0.11.0(viem@2.48.8(typescript@5.9.3)))(@noble/curves@2.0.1)(@openzeppelin/merkle-tree@1.0.8)(@rhinestone/module-sdk@0.4.0(viem@2.48.8(typescript@5.9.3)))(@safe-global/types-kit@3.0.0(typescript@5.9.3))(typescript@5.9.3)(viem@2.48.8(typescript@5.9.3))':
+  '@biconomy/abstractjs@1.2.3(@metamask/delegation-toolkit@0.11.0(viem@2.49.2(typescript@5.9.3)))(@noble/curves@2.0.1)(@openzeppelin/merkle-tree@1.0.8)(@rhinestone/module-sdk@0.4.0(viem@2.49.2(typescript@5.9.3)))(@safe-global/types-kit@3.0.0(typescript@5.9.3))(typescript@5.9.3)(viem@2.49.2(typescript@5.9.3))':
     dependencies:
-      '@metamask/delegation-toolkit': 0.11.0(viem@2.48.8(typescript@5.9.3))
+      '@metamask/delegation-toolkit': 0.11.0(viem@2.49.2(typescript@5.9.3))
       '@noble/curves': 2.0.1
       '@openzeppelin/merkle-tree': 1.0.8
-      '@rhinestone/module-sdk': 0.4.0(viem@2.48.8(typescript@5.9.3))
+      '@rhinestone/module-sdk': 0.4.0(viem@2.49.2(typescript@5.9.3))
       '@safe-global/types-kit': 3.0.0(typescript@5.9.3)
       typescript: 5.9.3
-      viem: 2.48.8(typescript@5.9.3)
+      viem: 2.49.2(typescript@5.9.3)
 
   '@esbuild/android-arm64@0.18.20':
     optional: true
@@ -563,18 +578,18 @@ snapshots:
 
   '@metamask/delegation-deployments@0.11.0': {}
 
-  '@metamask/delegation-toolkit@0.11.0(viem@2.48.8(typescript@5.9.3))':
+  '@metamask/delegation-toolkit@0.11.0(viem@2.49.2(typescript@5.9.3))':
     dependencies:
-      '@metamask/delegation-utils': 0.11.0(viem@2.48.8(typescript@5.9.3))
-      viem: 2.48.8(typescript@5.9.3)
+      '@metamask/delegation-utils': 0.11.0(viem@2.49.2(typescript@5.9.3))
+      viem: 2.49.2(typescript@5.9.3)
       webauthn-p256: 0.0.5
 
-  '@metamask/delegation-utils@0.11.0(viem@2.48.8(typescript@5.9.3))':
+  '@metamask/delegation-utils@0.11.0(viem@2.49.2(typescript@5.9.3))':
     dependencies:
       '@metamask/delegation-abis': 0.11.0
       '@metamask/delegation-deployments': 0.11.0
       buffer: 6.0.3
-      viem: 2.48.8(typescript@5.9.3)
+      viem: 2.49.2(typescript@5.9.3)
 
   '@metamask/superstruct@3.2.1': {}
 
@@ -606,6 +621,10 @@ snapshots:
     dependencies:
       '@noble/hashes': 1.8.0
 
+  '@noble/curves@1.9.7':
+    dependencies:
+      '@noble/hashes': 1.8.0
+
   '@noble/curves@2.0.1':
     dependencies:
       '@noble/hashes': 2.0.1
@@ -623,15 +642,15 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@rhinestone/module-sdk@0.4.0(viem@2.48.8(typescript@5.9.3))':
+  '@rhinestone/module-sdk@0.4.0(viem@2.49.2(typescript@5.9.3))':
     dependencies:
       solady: 0.0.235
       tslib: 2.8.1
-      viem: 2.48.8(typescript@5.9.3)
+      viem: 2.49.2(typescript@5.9.3)
 
   '@safe-global/types-kit@3.0.0(typescript@5.9.3)':
     dependencies:
-      abitype: 1.2.3(typescript@5.9.3)
+      abitype: 1.2.4(typescript@5.9.3)
     transitivePeerDependencies:
       - typescript
       - zod
@@ -668,11 +687,15 @@ snapshots:
 
   '@types/ms@2.1.0': {}
 
-  '@types/node@20.19.39':
+  '@types/node@20.19.41':
     dependencies:
       undici-types: 6.21.0
 
   abitype@1.2.3(typescript@5.9.3):
+    optionalDependencies:
+      typescript: 5.9.3
+
+  abitype@1.2.4(typescript@5.9.3):
     optionalDependencies:
       typescript: 5.9.3
 
@@ -767,9 +790,9 @@ snapshots:
     transitivePeerDependencies:
       - zod
 
-  permissionless@0.2.57(viem@2.48.8(typescript@5.9.3)):
+  permissionless@0.2.57(viem@2.49.2(typescript@5.9.3)):
     dependencies:
-      viem: 2.48.8(typescript@5.9.3)
+      viem: 2.49.2(typescript@5.9.3)
 
   pony-cause@2.1.11: {}
 
@@ -802,7 +825,7 @@ snapshots:
 
   uuid@9.0.1: {}
 
-  viem@2.48.8(typescript@5.9.3):
+  viem@2.49.2(typescript@5.9.3):
     dependencies:
       '@noble/curves': 1.9.1
       '@noble/hashes': 1.8.0
@@ -821,7 +844,7 @@ snapshots:
 
   webauthn-p256@0.0.5:
     dependencies:
-      '@noble/curves': 1.9.1
+      '@noble/curves': 1.9.7
       '@noble/hashes': 1.8.0
 
   ws@8.18.3: {}
